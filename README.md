@@ -3,7 +3,7 @@
 A tiny Windows tray app that brings lost windows back on screen.
 
 Unplugged a monitor, changed resolution, or got a dialog stuck off the edge? Press
-**Ctrl+Alt+Home** and the active window lands fully visible on the screen under your mouse.
+**Ctrl+Alt+Home** and the active window jumps to the center of the screen under your mouse.
 Click the tray icon and every off-screen window comes back.
 
 - One ~280 KB executable. No installer, no runtime, no background service.
@@ -14,7 +14,7 @@ Click the tray icon and every off-screen window comes back.
 
 | Action | What happens |
 |---|---|
-| **Ctrl+Alt+Home** | The active window moves onto the screen under the mouse, centered, shrunk if it does not fit. Maximized windows stay maximized. A window already fully visible there is left alone. |
+| **Ctrl+Alt+Home** | The active window jumps to the center of the screen under the mouse, shrunk if it does not fit. Maximized windows stay maximized. |
 | **Click the tray icon** | Every window whose title bar is off screen comes back. |
 | **Right-click the tray icon** | Change the shortcut, start with Windows, about, exit. |
 

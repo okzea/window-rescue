@@ -26,14 +26,14 @@ pub struct Report {
     pub denied: Vec<String>,
 }
 
-/// Brings the active window fully onto the monitor under the mouse pointer.
+/// Centers the active window on the monitor under the mouse pointer, shrinking it to fit.
 pub fn rescue_foreground() -> Outcome {
     unsafe {
         let hwnd = GetAncestor(GetForegroundWindow(), GA_ROOT);
         if hwnd.is_null() || is_own(hwnd) || is_shell(hwnd) {
             return Outcome::Skipped;
         }
-        move_into(hwnd, &target_work_area(), 0)
+        move_into(hwnd, &target_work_area(), 0, true)
     }
 }
 
@@ -47,7 +47,7 @@ pub fn rescue_offscreen() -> Report {
             continue;
         }
         // Cascade so several rescued windows do not land exactly on top of each other.
-        match move_into(hwnd, &work, report.moved as i32 * 32) {
+        match move_into(hwnd, &work, report.moved as i32 * 32, false) {
             Outcome::Moved => report.moved += 1,
             Outcome::Denied(title) => report.denied.push(title),
             _ => {}
@@ -56,13 +56,15 @@ pub fn rescue_offscreen() -> Report {
     report
 }
 
-fn move_into(hwnd: HWND, work: &RECT, offset: i32) -> Outcome {
+/// With `always`, a window already fully visible in `work` is still centered there, so the
+/// shortcut visibly does something; maximized windows already there are left alone either way.
+fn move_into(hwnd: HWND, work: &RECT, offset: i32, always: bool) -> Outcome {
     unsafe {
         if IsIconic(hwnd) != 0 {
             ShowWindow(hwnd, SW_RESTORE);
         }
         let maximized = IsZoomed(hwnd) != 0;
-        if contains(work, &frame_rect(hwnd)) {
+        if (maximized || !always) && contains(work, &frame_rect(hwnd)) {
             return Outcome::AlreadyVisible;
         }
         // A maximized window is moved in its restored state, then maximized again on the new monitor.
@@ -106,6 +108,9 @@ fn place(hwnd: HWND, work: &RECT, offset: i32) -> bool {
 
         let mut flags = SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE;
         if w == width(&frame) && h == height(&frame) {
+            if x == frame.left && y == frame.top {
+                return true; // Already exactly there.
+            }
             flags |= SWP_NOSIZE;
         }
         // An elevated window either fails the call or silently stays put.

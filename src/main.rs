@@ -1,7 +1,7 @@
 //! Window Rescue — a tray icon and a shortcut that bring off-screen windows back.
 //!
-//! - The shortcut (Ctrl+Alt+Home by default) brings the active window fully onto the
-//!   monitor under the mouse pointer.
+//! - The shortcut (Ctrl+Alt+Home by default) centers the active window on the monitor
+//!   under the mouse pointer.
 //! - Clicking the tray icon brings back every window that is off screen.
 //! - `WindowRescue.exe --rescue-all` and `--rescue-active` do the same once, without staying
 //!   in the tray — handy to bind from another launcher.
@@ -183,7 +183,7 @@ fn show_menu(hwnd: HWND) {
 fn about(hwnd: HWND) {
     let text = format!(
         "Window Rescue {}\n\n\
-         {} — brings the active window fully onto the screen under the mouse pointer.\n\n\
+         {} — centers the active window on the screen under the mouse pointer.\n\n\
          Click the tray icon — brings back every window that is off screen.\n\n\
          {}",
         env!("CARGO_PKG_VERSION"),
