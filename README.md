@@ -6,7 +6,7 @@ Unplugged a monitor, changed resolution, or got a dialog stuck off the edge? Pre
 **Ctrl+Alt+Home** and the active window jumps to the center of the screen under your mouse.
 Click the tray icon and every off-screen window comes back.
 
-- One ~280 KB executable. No installer, no runtime, no background service.
+- One small executable (under 400 KB). No installer, no runtime, no background service.
 - No network access, no telemetry, no files written. Two registry values, that's all.
 - Windows 10 and 11, multi-monitor and mixed-DPI setups.
 
