@@ -172,7 +172,12 @@ fn paint(hwnd: HWND) {
         rect.bottom -= pad;
         let text = MESSAGE.with_borrow(|m| format!("{m}\n\nCurrent: {}    ·    Esc to cancel", shortcut().name()));
         let mut text = wide(&text);
-        DrawTextW(hdc, text.as_mut_ptr(), -1, &mut rect, DT_CENTER | DT_WORDBREAK | DT_NOPREFIX);
+        let flags = DT_CENTER | DT_WORDBREAK | DT_NOPREFIX;
+        // Measure first, then center the block vertically.
+        let mut measured = rect;
+        DrawTextW(hdc, text.as_mut_ptr(), -1, &mut measured, flags | DT_CALCRECT);
+        rect.top += ((rect.bottom - rect.top) - (measured.bottom - measured.top)).max(0) / 2;
+        DrawTextW(hdc, text.as_mut_ptr(), -1, &mut rect, flags);
 
         SelectObject(hdc, previous);
         DeleteObject(font as HGDIOBJ);

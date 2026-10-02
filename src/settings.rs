@@ -71,7 +71,7 @@ fn key_name(vk: u32) -> String {
         let mut buf = [0u16; 64];
         let len = GetKeyNameTextW(lparam, buf.as_mut_ptr(), buf.len() as i32);
         if len > 0 {
-            String::from_utf16_lossy(&buf[..len as usize])
+            title_case(&String::from_utf16_lossy(&buf[..len as usize]))
         } else {
             format!("Key {vk}")
         }
@@ -94,6 +94,20 @@ pub fn first_run() -> bool {
         write_dword("Welcomed", 1);
     }
     first
+}
+
+/// Windows names some keys in capitals ("HOME", "PAGE UP"); show them as "Home", "Page Up".
+fn title_case(name: &str) -> String {
+    if name.chars().count() < 2 || name.chars().any(|c| c.is_lowercase()) {
+        return name.to_string();
+    }
+    name.split(' ')
+        .map(|word| {
+            let mut chars = word.chars();
+            chars.next().map(|first| first.to_string() + &chars.as_str().to_lowercase()).unwrap_or_default()
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 pub fn autostart_enabled() -> bool {
