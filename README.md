@@ -59,7 +59,15 @@ Needs [Rust](https://rustup.rs) (either the MSVC or the GNU toolchain) and Power
 ```
 
 `cargo build --release` alone works too; the exe just has no icon or version info.
-`assets/make-icon.ps1` redraws the icon.
+`assets/make-icon.ps1` redraws the icon and the Store logos.
+
+### Releases and the Microsoft Store package
+
+Pushing a tag `vX.Y.Z` (matching `Cargo.toml`) runs [the release workflow](.github/workflows/release.yml):
+it builds the exe, packages it as MSIX with `packaging/pack.ps1`, installs and starts that
+package on the runner, publishes a GitHub release with the exe, and keeps the MSIX as an
+artifact to upload to Partner Center. The Store build turns **Start with Windows** into a
+startup task, managed in Settings > Apps > Startup.
 
 ## License
 

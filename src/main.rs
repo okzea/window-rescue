@@ -91,6 +91,10 @@ fn main() {
         add_tray_icon(hwnd);
         if !shortcut.register(hwnd) {
             shortcut_unavailable(hwnd, shortcut);
+        } else if settings::first_run() {
+            // A tray-only app shows nothing when it starts: say once where it lives.
+            let text = format!("Press {} or click this icon to bring windows back. Right-click for options.", shortcut.name());
+            notify(hwnd, "Window Rescue is running", &text);
         }
 
         let mut msg: MSG = zeroed();
@@ -153,7 +157,11 @@ fn show_menu(hwnd: HWND) {
         SetMenuDefaultItem(menu, IDM_RESCUE as u32, 0);
         AppendMenuW(menu, MF_SEPARATOR, 0, null());
         item(MF_STRING, IDM_SHORTCUT, &format!("Change shortcut…\t{}", shortcut().name()));
-        item(if settings::autostart_enabled() { MF_CHECKED } else { MF_UNCHECKED }, IDM_AUTOSTART, "Start with Windows");
+        if settings::is_packaged() {
+            item(MF_STRING, IDM_AUTOSTART, "Start with Windows…");
+        } else {
+            item(if settings::autostart_enabled() { MF_CHECKED } else { MF_UNCHECKED }, IDM_AUTOSTART, "Start with Windows");
+        }
         AppendMenuW(menu, MF_SEPARATOR, 0, null());
         item(MF_STRING, IDM_ABOUT, "About Window Rescue");
         item(MF_STRING, IDM_EXIT, "Exit");
@@ -170,6 +178,7 @@ fn show_menu(hwnd: HWND) {
         match command {
             IDM_RESCUE => rescue_all(hwnd),
             IDM_SHORTCUT => recorder::open(hwnd),
+            IDM_AUTOSTART if settings::is_packaged() => open_startup_settings(),
             IDM_AUTOSTART => settings::set_autostart(!settings::autostart_enabled()),
             IDM_ABOUT => about(hwnd),
             IDM_EXIT => {
@@ -177,6 +186,13 @@ fn show_menu(hwnd: HWND) {
             }
             _ => {}
         }
+    }
+}
+
+/// The Store build cannot toggle its own startup task without WinRT; Windows lists it here.
+fn open_startup_settings() {
+    unsafe {
+        ShellExecuteW(null_mut(), wide("open").as_ptr(), wide("ms-settings:startupapps").as_ptr(), null(), null(), SW_SHOWNORMAL);
     }
 }
 

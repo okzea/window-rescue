@@ -4,7 +4,8 @@
 use std::ffi::c_void;
 use std::ptr::null_mut;
 
-use windows_sys::Win32::Foundation::{ERROR_SUCCESS, HWND};
+use windows_sys::Win32::Foundation::{APPMODEL_ERROR_NO_PACKAGE, ERROR_SUCCESS, HWND};
+use windows_sys::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName;
 use windows_sys::Win32::System::LibraryLoader::GetModuleFileNameW;
 use windows_sys::Win32::System::Registry::*;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::*;
@@ -75,6 +76,24 @@ fn key_name(vk: u32) -> String {
             format!("Key {vk}")
         }
     }
+}
+
+/// True for the Microsoft Store (MSIX) build. Windows redirects a packaged app's registry
+/// writes into a private copy, so the Run key cannot start it: the package declares a
+/// startup task instead, which the user turns on in Settings > Apps > Startup.
+pub fn is_packaged() -> bool {
+    let mut len = 0u32;
+    let status = unsafe { GetCurrentPackageFullName(&mut len, null_mut()) };
+    status != APPMODEL_ERROR_NO_PACKAGE
+}
+
+/// True only the very first time Window Rescue starts.
+pub fn first_run() -> bool {
+    let first = read_dword("Welcomed").is_none();
+    if first {
+        write_dword("Welcomed", 1);
+    }
+    first
 }
 
 pub fn autostart_enabled() -> bool {

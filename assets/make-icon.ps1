@@ -1,5 +1,6 @@
-# Draws assets/WindowRescue.ico: a window with an arrow bringing it back, on a blue tile.
-# Every size is drawn from the same 256-unit layout and stored as PNG inside the .ico.
+# Draws the app icon 'a window with an arrow bringing it back, on a blue tile' into
+# assets/WindowRescue.ico and the Store logos in packaging/Assets. Every image comes from the
+# same 256-unit layout; the .ico stores each size as PNG.
 #
 #   ./assets/make-icon.ps1
 Add-Type -AssemblyName System.Drawing
@@ -15,18 +16,20 @@ function Rounded([float]$x, [float]$y, [float]$w, [float]$h, [float]$r) {
     $p
 }
 
-function Draw([int]$size) {
+# The icon on a transparent canvas of $size, drawn at $fill of its width and centered.
+function Draw([int]$size, [float]$fill = 1) {
     $bmp = New-Object System.Drawing.Bitmap $size, $size
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = 'AntiAlias'
     $g.PixelOffsetMode = 'HighQuality'
-    $g.ScaleTransform($size / 256, $size / 256)
+    $g.TranslateTransform($size * (1 - $fill) / 2, $size * (1 - $fill) / 2)
+    $g.ScaleTransform($size * $fill / 256, $size * $fill / 256)
 
     $tile = Rounded 8 8 240 240 52
     $top = [System.Drawing.Color]::FromArgb(59, 130, 246)
     $bottom = [System.Drawing.Color]::FromArgb(29, 78, 216)
-    $fill = New-Object System.Drawing.Drawing2D.LinearGradientBrush ([System.Drawing.PointF]::new(0, 8)), ([System.Drawing.PointF]::new(0, 248)), $top, $bottom
-    $g.FillPath($fill, $tile)
+    $gradient = New-Object System.Drawing.Drawing2D.LinearGradientBrush ([System.Drawing.PointF]::new(0, 8)), ([System.Drawing.PointF]::new(0, 248)), $top, $bottom
+    $g.FillPath($gradient, $tile)
 
     # The window: white body, light-blue title bar.
     $window = Rounded 36 68 132 120 16
@@ -67,3 +70,23 @@ for ($i = 0; $i -lt $sizes.Count; $i++) {
 }
 foreach ($img in $images) { $w.Write($img) }
 [System.IO.File]::WriteAllBytes((Join-Path $PSScriptRoot 'WindowRescue.ico'), $out.ToArray())
+
+# Store / MSIX logos. Unqualified files are the 100% scale; makepri picks the others by name.
+$logos = Join-Path $PSScriptRoot '..\packaging\Assets'
+New-Item -ItemType Directory -Force $logos | Out-Null
+$files = [ordered]@{
+    'StoreLogo.png'                    = 50, 1
+    'StoreLogo.scale-200.png'          = 100, 1
+    'Square44x44Logo.png'              = 44, 1
+    'Square44x44Logo.scale-200.png'    = 88, 1
+    'Square150x150Logo.png'            = 150, 0.6
+    'Square150x150Logo.scale-200.png'  = 300, 0.6
+}
+foreach ($t in 16, 24, 32, 48, 256) {
+    $files["Square44x44Logo.targetsize-$t.png"] = $t, 1
+    $files["Square44x44Logo.targetsize-${t}_altform-unplated.png"] = $t, 1
+}
+foreach ($name in $files.Keys) {
+    $size, $fill = $files[$name]
+    [System.IO.File]::WriteAllBytes((Join-Path $logos $name), (Draw $size $fill))
+}
