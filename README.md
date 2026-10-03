@@ -31,9 +31,11 @@ Handy to trigger Window Rescue from another launcher or keyboard tool.
 
 ## Install
 
-Download `WindowRescue.exe` from the [latest release](https://github.com/okzea/window-rescue/releases/latest),
-put it anywhere, and run it. Right-click the tray icon and tick **Start with Windows** to keep it around.
+**[Get it from the Microsoft Store](https://apps.microsoft.com/detail/9NVDL5TF3HPJ)** — installs and updates
+automatically.
 
+Or download `WindowRescue.exe` from the [latest release](https://github.com/okzea/window-rescue/releases/latest),
+put it anywhere, and run it. Right-click the tray icon and tick **Start with Windows** to keep it around.
 To uninstall, untick **Start with Windows**, exit, and delete the file.
 
 ## Limits
@@ -72,3 +74,7 @@ startup task, managed in Settings > Apps > Startup.
 ## License
 
 [MIT](LICENSE)
+
+---
+
+Made by [okzea](https://okzea.com), a small web and software studio.
