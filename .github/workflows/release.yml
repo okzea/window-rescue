@@ -31,6 +31,15 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
+      # A clean Windows install has no Visual C++ runtime: the exe must not import it.
+      - name: Check the exe needs no Visual C++ runtime
+        shell: pwsh
+        run: |
+          $text = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes('dist/WindowRescue.exe'))
+          $found = [regex]::Matches($text, '(?i)(vcruntime|msvcp)[0-9_]*\.dll') | ForEach-Object Value | Sort-Object -Unique
+          if ($found) { throw "WindowRescue.exe imports the Visual C++ runtime: $($found -join ', ')" }
+          'No Visual C++ runtime imports.'
+
       - name: Package for the Microsoft Store
         shell: pwsh
         env:
